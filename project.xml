@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="Wiggledoodle" package="com.sample.wiggledoodle" version="1.0.0" company="Company Name" />
+	<app main="Main" path="Export" file="Wiggledoodle" />
+	<window background="#EEEEEE" />
+	
+	<source path="Source" />
+	
+	<haxelib name="openfl" />
+	<haxelib name="zerolib" />
+
+	<postbuild cmd="cp -R Export/html5/bin/* docs/"/>
+	
+</project>
