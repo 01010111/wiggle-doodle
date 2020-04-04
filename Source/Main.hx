@@ -1,5 +1,7 @@
 package;
 
+import WiggleShape.PersonaShapeOptions;
+import js.html.BodyElement;
 import zero.utilities.Timer;
 import openfl.events.KeyboardEvent;
 import openfl.text.TextFormat;
@@ -12,6 +14,7 @@ class Main extends Sprite
 {
 
 	static var distance_threshold = 8;
+	var can_draw:Bool = true;
 	var shapes:Array<WiggleShape> = [];
 	var cur_shape:Array<Vec2>;
 	var canvas:Sprite;
@@ -104,9 +107,10 @@ class Main extends Sprite
 	}
 
 	function play_animation() {
+		can_draw = false;
 		var i = 0;
 		for (shape in shapes) shape.alpha = 0;
-		for (shape in shapes) Tween.get(shape).prop({ alpha : 1 }).duration(0.1).delay(i++ * 0.05 + 1);
+		for (shape in shapes) Tween.get(shape).prop({ alpha : 1 }).duration(0.1).delay(i++ * 0.05 + 1).on_complete(() -> if (shape == shapes.last()) can_draw = true);
 	}
 
 	function get_color(n:Int) {
@@ -116,14 +120,16 @@ class Main extends Sprite
 	}
 
 	function pointer_down(e:MouseEvent) {
+		if (!can_draw) return;
 		cur_shape = [[e.localX, e.localY]];
 		drawing = true;
 	}
 	
 	function pointer_up(e:MouseEvent) {
+		if (!drawing) return;
 		cur_shape.push([e.localX, e.localY]);
 		remove_near_vectors(cur_shape);
-		var shape = new WiggleShape({
+		add_shape({
 			poly: cur_shape,
 			line_thickness: line_thickness,
 			line_color: fill ? null : palette[palette_index_line],
@@ -132,10 +138,14 @@ class Main extends Sprite
 			jiggle: 0,
 			speed: 400
 		});
-		shapes.push(shape);
-		canvas.addChild(shape);
 		cur_line.graphics.clear();
 		drawing = false;
+	}
+
+	function add_shape(options:PersonaShapeOptions) {
+		var shape = new WiggleShape(options);
+		shapes.push(shape);
+		canvas.addChild(shape);
 	}
 
 	function remove_near_vectors(a:Array<Vec2>) {
@@ -149,7 +159,7 @@ class Main extends Sprite
 	}
 	
 	function pointer_move(e:MouseEvent) {
-		if (!drawing) return;
+		if (!drawing || !can_draw) return;
 		cur_shape.push([e.localX, e.localY]);
 		cur_line.graphics.clear();
 		var a = [for (v in cur_shape) v.copy()];

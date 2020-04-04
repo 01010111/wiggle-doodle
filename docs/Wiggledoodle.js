@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","4");
+		_this.setReserved("build","5");
 	} else {
-		_this.h["build"] = "4";
+		_this.h["build"] = "5";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -4557,6 +4557,7 @@ var Main = function() {
 	this.line_thickness = 4;
 	this.drawing = false;
 	this.shapes = [];
+	this.can_draw = true;
 	openfl_display_Sprite.call(this);
 	this.addChild(this.canvas = new openfl_display_Sprite());
 	this.addChild(this.cur_line = new openfl_display_Sprite());
@@ -4569,14 +4570,15 @@ var Main = function() {
 	this.stage.addEventListener("mouseUp",$bind(this,this.pointer_up));
 	this.stage.addEventListener("keyDown",$bind(this,this.key_down));
 	this.stage.addEventListener("enterFrame",util_UpdateManager.update);
-	haxe_Log.trace("\n\t\t\tCONTROLS:\n\t\t\t~~~~~~~~~\n\t\t\tUP/DOWN - line thickness\n\t\t\tLEFT/RIGHT - select color\n\t\t\tF - fill/line mode\n\t\t\tR - reduce last poly\n\t\t\tShift+R - reduce all poly\n\t\t\tCtrl+Z - undo last poly\n\t\t\tCtrl+Shift+Z - clear screen\n\t\t\tSpace - play animation\n\t\t",{ fileName : "Source/Main.hx", lineNumber : 58, className : "Main", methodName : "new"});
+	haxe_Log.trace("\n\t\t\tCONTROLS:\n\t\t\t~~~~~~~~~\n\t\t\tUP/DOWN - line thickness\n\t\t\tLEFT/RIGHT - select color\n\t\t\tF - fill/line mode\n\t\t\tR - reduce last poly\n\t\t\tShift+R - reduce all poly\n\t\t\tCtrl+Z - undo last poly\n\t\t\tCtrl+Shift+Z - clear screen\n\t\t\tSpace - play animation\n\t\t",{ fileName : "Source/Main.hx", lineNumber : 61, className : "Main", methodName : "new"});
 	zero_utilities_EventBus.listen($bind(this,this.update),"update");
 };
 $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
 Main.__super__ = openfl_display_Sprite;
 Main.prototype = $extend(openfl_display_Sprite.prototype,{
-	shapes: null
+	can_draw: null
+	,shapes: null
 	,cur_shape: null
 	,canvas: null
 	,cur_line: null
@@ -4588,7 +4590,7 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 	,palette_index_fill: null
 	,palette: null
 	,key_down: function(e) {
-		haxe_Log.trace(e.keyCode,{ fileName : "Source/Main.hx", lineNumber : 74, className : "Main", methodName : "key_down"});
+		haxe_Log.trace(e.keyCode,{ fileName : "Source/Main.hx", lineNumber : 77, className : "Main", methodName : "key_down"});
 		if(e.keyCode == 70) {
 			this.change_fill();
 		}
@@ -4657,6 +4659,8 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 		this.line_thickness += n;
 	}
 	,play_animation: function() {
+		var _gthis = this;
+		this.can_draw = false;
 		var i = 0;
 		var _g = 0;
 		var _g1 = this.shapes;
@@ -4668,9 +4672,17 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 		var _g2 = 0;
 		var _g3 = this.shapes;
 		while(_g2 < _g3.length) {
-			var shape1 = _g3[_g2];
+			var shape1 = [_g3[_g2]];
 			++_g2;
-			util_Tween.get(shape1).prop({ alpha : 1}).duration(0.1).delay(i++ * 0.05 + 1);
+			util_Tween.get(shape1[0]).prop({ alpha : 1}).duration(0.1).delay(i++ * 0.05 + 1).on_complete((function(shape2) {
+				return function() {
+					var a = _gthis.shapes;
+					if(shape2[0] == a[a.length - 1]) {
+						_gthis.can_draw = true;
+					}
+					return;
+				};
+			})(shape1));
 		}
 	}
 	,get_color: function(n) {
@@ -4682,17 +4694,26 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 		this.update_palette();
 	}
 	,pointer_down: function(e) {
+		if(!this.can_draw) {
+			return;
+		}
 		this.cur_shape = [zero_utilities__$Vec2_Vec2_$Impl_$.from_array_float([e.localX,e.localY])];
 		this.drawing = true;
 	}
 	,pointer_up: function(e) {
+		if(!this.drawing) {
+			return;
+		}
 		this.cur_shape.push(zero_utilities__$Vec2_Vec2_$Impl_$.from_array_float([e.localX,e.localY]));
 		this.remove_near_vectors(this.cur_shape);
-		var shape = new WiggleShape({ poly : this.cur_shape, line_thickness : this.line_thickness, line_color : this.fill ? null : this.palette[this.palette_index_line], fill_color : this.fill ? this.palette[this.palette_index_fill] : null, wiggle : 1, jiggle : 0, speed : 400});
-		this.shapes.push(shape);
-		this.canvas.addChild(shape);
+		this.add_shape({ poly : this.cur_shape, line_thickness : this.line_thickness, line_color : this.fill ? null : this.palette[this.palette_index_line], fill_color : this.fill ? this.palette[this.palette_index_fill] : null, wiggle : 1, jiggle : 0, speed : 400});
 		this.cur_line.get_graphics().clear();
 		this.drawing = false;
+	}
+	,add_shape: function(options) {
+		var shape = new WiggleShape(options);
+		this.shapes.push(shape);
+		this.canvas.addChild(shape);
 	}
 	,remove_near_vectors: function(a) {
 		var _g = 1;
@@ -4715,7 +4736,7 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 		}
 	}
 	,pointer_move: function(e) {
-		if(!this.drawing) {
+		if(!this.drawing || !this.can_draw) {
 			return;
 		}
 		this.cur_shape.push(zero_utilities__$Vec2_Vec2_$Impl_$.from_array_float([e.localX,e.localY]));
