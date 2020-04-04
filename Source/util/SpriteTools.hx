@@ -1,3 +1,5 @@
+package util;
+
 import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.display.DisplayObject;

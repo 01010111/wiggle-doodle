@@ -1,5 +1,6 @@
 package;
 
+import zero.utilities.Timer;
 import openfl.events.KeyboardEvent;
 import openfl.text.TextFormat;
 import openfl.text.TextField;
@@ -53,7 +54,7 @@ class Main extends Sprite
 		stage.addEventListener(MouseEvent.MOUSE_MOVE, pointer_move);
 		stage.addEventListener(MouseEvent.MOUSE_UP, pointer_up);
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, key_down);
-		stage.addEventListener(Event.ENTER_FRAME, update);
+		stage.addEventListener(Event.ENTER_FRAME, util.UpdateManager.update);
 		trace('
 			CONTROLS:
 			~~~~~~~~~
@@ -61,22 +62,51 @@ class Main extends Sprite
 			LEFT/RIGHT - select color
 			F - fill/line mode
 			R - reduce last poly
-			E+Shift - undo last poly
-			C+Shidt - clear screen
+			Shift+R - reduce all poly
+			Ctrl+Z - undo last poly
+			Ctrl+Shift+Z - clear screen
+			Space - play animation
 		');
+		update.listen('update');
 	}
 
 	function key_down(e:KeyboardEvent) {
-		if (e.keyCode == 70) fill = !fill;
-		if (e.keyCode == 38) line_thickness++;
-		if (e.keyCode == 40) line_thickness--;
+		trace(e.keyCode);
+		if (e.keyCode == 70) change_fill();
+		if (e.keyCode == 38) change_line(1);
+		if (e.keyCode == 40) change_line(-1);
 		if (e.keyCode == 37) get_color(-1);
 		if (e.keyCode == 39) get_color(1);
-		if (e.keyCode == 82) reduce_poly(shapes.last().options.poly);
-		if (e.keyCode == 67 && e.shiftKey) for (shape in shapes) shape.remove();
-		if (e.keyCode == 69 && e.shiftKey) shapes.pop().remove();
+		if (e.keyCode == 82) e.shiftKey ? for (shape in shapes) reduce_poly(shape.options.poly) : reduce_poly(shapes.last().options.poly);
+		if (e.keyCode == 90 && e.shiftKey && e.ctrlKey) clear();
+		if (e.keyCode == 90 && e.ctrlKey) undo();
+		if (e.keyCode == 32) play_animation();
+		if (e.keyCode == 73) input();
+		if (e.keyCode == 79) output();
 		update_text();
 		update_palette();
+	}
+
+	function clear() {
+		for (shape in shapes) shape.remove();
+	}
+
+	function undo() {
+		shapes.pop().remove();
+	}
+
+	function change_fill() {
+		fill = !fill;
+	}
+
+	function change_line(n:Int) {
+		line_thickness += n;
+	}
+
+	function play_animation() {
+		var i = 0;
+		for (shape in shapes) shape.alpha = 0;
+		for (shape in shapes) Tween.get(shape).prop({ alpha : 1 }).duration(0.1).delay(i++ * 0.05 + 1);
 	}
 
 	function get_color(n:Int) {
@@ -100,7 +130,7 @@ class Main extends Sprite
 			fill_color: fill ? palette[palette_index_fill] : null,
 			wiggle: 1,
 			jiggle: 0,
-			speed: 4
+			speed: 400
 		});
 		shapes.push(shape);
 		canvas.addChild(shape);
@@ -132,8 +162,10 @@ class Main extends Sprite
 		cur_line.poly(fill ? palette[palette_index_fill] : palette[palette_index_line], a, line_thickness);
 	}
 
-	function update(e:Event) {
-		for (shape in shapes) shape.update(1/60);
+	function update(?dt:Float) {
+		for (shape in shapes) shape.update(dt);
+		Timer.update(dt);
+		Tween.update(dt);
 	}
 
 	function update_text() {
@@ -146,6 +178,14 @@ class Main extends Sprite
 
 	function reduce_poly(poly:Array<Vec2>) {
 		for (i in 1...poly.length - 1) if (i % 2 == 0) poly.remove(poly[i]);
+	}
+
+	function input() {
+		
+	}
+
+	function output() {
+		
 	}
 	
 }

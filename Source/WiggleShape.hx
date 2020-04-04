@@ -3,7 +3,7 @@ class WiggleShape extends openfl.display.Sprite {
 	static var freq_table = [0.13, 0.19, 0.15, 0.17];
 	static var freq_index = 0;
 
-	var counter = 0;
+	var counter:Float = 0;
 	public var options:PersonaShapeOptions;
 	public var last_poly:Array<Vec2> = [];
 
@@ -13,7 +13,7 @@ class WiggleShape extends openfl.display.Sprite {
 	}
 
 	public function update(?dt:Float) {
-		counter += options.speed;
+		counter += options.speed * dt;
 		
 		// Wiggle
 		var poly_copy = [];
