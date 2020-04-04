@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","2");
+		_this.setReserved("build","4");
 	} else {
-		_this.h["build"] = "2";
+		_this.h["build"] = "4";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -4637,13 +4637,10 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 		this.update_palette();
 	}
 	,clear: function() {
-		var _g = 0;
-		var _g1 = this.shapes;
-		while(_g < _g1.length) {
-			var shape = _g1[_g];
-			++_g;
-			if(shape.parent != null) {
-				shape.parent.removeChild(shape);
+		while(this.shapes.length > 0) {
+			var sprite = this.shapes.pop();
+			if(sprite.parent != null) {
+				sprite.parent.removeChild(sprite);
 			}
 		}
 	}
