@@ -88,7 +88,7 @@ class Main extends Sprite
 	}
 
 	function clear() {
-		for (shape in shapes) shape.remove();
+		while (shapes.length > 0) shapes.pop().remove();
 	}
 
 	function undo() {
