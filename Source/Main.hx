@@ -1,11 +1,8 @@
 package;
 
 import WiggleShape.PersonaShapeOptions;
-import js.html.BodyElement;
 import zero.utilities.Timer;
 import openfl.events.KeyboardEvent;
-import openfl.text.TextFormat;
-import openfl.text.TextField;
 import openfl.events.MouseEvent;
 import openfl.events.Event;
 import openfl.display.Sprite;
@@ -13,19 +10,11 @@ import openfl.display.Sprite;
 class Main extends Sprite
 {
 
-	static var distance_threshold = 8;
-	var can_draw:Bool = true;
-	var shapes:Array<WiggleShape> = [];
-	var cur_shape:Array<Vec2>;
-	var canvas:Sprite;
-	var cur_line:Sprite;
-	var drawing:Bool = false;
-	var line_thickness:Int = 4;
-	var fill:Bool = false;
-	var text:TextField;
-	var palette_index_line:Int = 1;
-	var palette_index_fill:Int = 8;
-	var palette = [
+	public static var line_thickness:Int = 4;
+	public static var fill:Bool = false;
+	public static var palette_index_line:Int = 1;
+	public static var palette_index_fill:Int = 8;
+	public static var palette = [
 		Color.PICO_8_BLACK,
 		Color.PICO_8_DARK_BLUE,
 		Color.PICO_8_DARK_PURPLE,
@@ -44,16 +33,34 @@ class Main extends Sprite
 		Color.PICO_8_PEACH
 	];
 
+	static var distance_threshold = 8;
+
+	var can_draw:Bool = true;
+	var shapes:Array<WiggleShape> = [];
+	var cur_shape:Array<Vec2>;
+	var canvas:Sprite;
+	var cur_line:Sprite;
+	var drawing:Bool = false;
+
 	public function new()
 	{
 		super();
 		addChild(canvas = new Sprite());
+		canvas.fill_rect(Color.WHITE, 0, 0, 10000, 10000);
 		addChild(cur_line = new Sprite());
-		addChild(text = new TextField());
-		text.setTextFormat(new TextFormat('consolas', 12, 0x000000, true));
-		update_text();
-		update_palette();
-		stage.addEventListener(MouseEvent.MOUSE_DOWN, pointer_down);
+		addChild(new Toolbar({
+			fill: () -> change_fill(),
+			fill_color: palette_index_fill,
+			line_color: palette_index_line,
+			change_line: (i) -> change_line(i),
+			erase: () -> undo(),
+			simplify: () -> reduce_poly(shapes.last().options.poly),
+			clear: clear,
+			select_line_color: (i) -> return palette_index_line = i,
+			select_fill_color: (i) -> return palette_index_fill = i,
+		}));
+		addChild(new Palette());
+		canvas.addEventListener(MouseEvent.MOUSE_DOWN, pointer_down);
 		stage.addEventListener(MouseEvent.MOUSE_MOVE, pointer_move);
 		stage.addEventListener(MouseEvent.MOUSE_UP, pointer_up);
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, key_down);
@@ -86,8 +93,6 @@ class Main extends Sprite
 		if (e.keyCode == 32) play_animation();
 		if (e.keyCode == 73) input();
 		if (e.keyCode == 79) output();
-		update_text();
-		update_palette();
 	}
 
 	function clear() {
@@ -98,12 +103,15 @@ class Main extends Sprite
 		shapes.pop().remove();
 	}
 
-	function change_fill() {
+	function change_fill():Bool {
 		fill = !fill;
+		return fill;
 	}
 
-	function change_line(n:Int) {
+	function change_line(n:Int):Int {
+		trace(n);
 		line_thickness += n;
+		return line_thickness;
 	}
 
 	function play_animation() {
@@ -116,7 +124,6 @@ class Main extends Sprite
 	function get_color(n:Int) {
 		if (fill) palette_index_fill = (palette_index_fill + n).min(15).max(0).to_int();
 		else palette_index_line = (palette_index_line + n).min(15).max(0).to_int();
-		update_palette();
 	}
 
 	function pointer_down(e:MouseEvent) {
@@ -176,14 +183,6 @@ class Main extends Sprite
 		for (shape in shapes) shape.update(dt);
 		Timer.update(dt);
 		Tween.update(dt);
-	}
-
-	function update_text() {
-		text.text = 'mode: ${fill ? 'fill' : 'line'}\nline: ${line_thickness}';
-	}
-
-	function update_palette() {
-		this.fill_circle(palette[fill ? palette_index_fill : palette_index_line], 24, 48, 16);
 	}
 
 	function reduce_poly(poly:Array<Vec2>) {
