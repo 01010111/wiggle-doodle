@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","8");
+		_this.setReserved("build","9");
 	} else {
-		_this.h["build"] = "8";
+		_this.h["build"] = "9";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -6152,12 +6152,13 @@ zero_utilities__$Color_Color_$Impl_$.get_aaab = function(this1) {
 zero_utilities__$Color_Color_$Impl_$.get_aaaa = function(this1) {
 	return zero_utilities__$Color_Color_$Impl_$.get(this1[3],this1[3],this1[3],this1[3]);
 };
-var Main = function() {
+var Main = $hx_exports["Main"] = function() {
 	this.drawing = false;
 	this.shapes = [];
 	this.can_draw = true;
 	var _gthis = this;
 	openfl_display_Sprite.call(this);
+	Main.i = this;
 	this.addChild(this.canvas = new openfl_display_Sprite());
 	var sprite = this.canvas;
 	var color = zero_utilities__$Color_Color_$Impl_$.WHITE;
@@ -6192,6 +6193,27 @@ var Main = function() {
 };
 $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
+Main.input = function(input) {
+	Main.i.clear();
+	var shapes = JSON.parse(input);
+	var _g = 0;
+	while(_g < shapes.length) {
+		var shape = shapes[_g];
+		++_g;
+		Main.i.add_shape(shape);
+	}
+};
+Main.output = function() {
+	var _g = [];
+	var _g1 = 0;
+	var _g2 = Main.i.shapes;
+	while(_g1 < _g2.length) {
+		var shape = _g2[_g1];
+		++_g1;
+		_g.push(shape.options);
+	}
+	haxe_Log.trace(JSON.stringify(_g),{ fileName : "Source/Main.hx", lineNumber : 184, className : "Main", methodName : "output"});
+};
 Main.__super__ = openfl_display_Sprite;
 Main.prototype = $extend(openfl_display_Sprite.prototype,{
 	can_draw: null
@@ -6217,6 +6239,7 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 		}
 	}
 	,clear: function() {
+		Main.output();
 		while(this.shapes.length > 0) {
 			var sprite = this.shapes.pop();
 			if(sprite.parent != null) {
@@ -6235,7 +6258,7 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 		return Main.fill;
 	}
 	,change_line: function(n) {
-		haxe_Log.trace(n,{ fileName : "Source/Main.hx", lineNumber : 93, className : "Main", methodName : "change_line"});
+		haxe_Log.trace(n,{ fileName : "Source/Main.hx", lineNumber : 97, className : "Main", methodName : "change_line"});
 		Main.line_thickness += n;
 		return Main.line_thickness;
 	}
@@ -6419,10 +6442,6 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 				HxOverrides.remove(poly,poly[i]);
 			}
 		}
-	}
-	,input: function() {
-	}
-	,output: function() {
 	}
 	,__class__: Main
 });

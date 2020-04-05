@@ -1,15 +1,17 @@
 package;
 
+import haxe.Json;
 import WiggleShape.PersonaShapeOptions;
 import zero.utilities.Timer;
-import openfl.events.KeyboardEvent;
 import openfl.events.MouseEvent;
 import openfl.events.Event;
 import openfl.display.Sprite;
 
+@:expose
 class Main extends Sprite
 {
 
+	public static var i:Main;
 	public static var line_thickness:Int = 4;
 	public static var fill:Bool = false;
 	public static var palette_index_line:Int = 1;
@@ -45,6 +47,7 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
+		i = this;
 		addChild(canvas = new Sprite());
 		canvas.fill_rect(Color.WHITE, 0, 0, 10000, 10000);
 		addChild(cur_line = new Sprite());
@@ -77,6 +80,7 @@ class Main extends Sprite
 	}
 
 	function clear() {
+		output();
 		while (shapes.length > 0) shapes.pop().remove();
 	}
 
@@ -170,12 +174,14 @@ class Main extends Sprite
 		for (i in 1...poly.length - 1) if (i % 2 == 0) poly.remove(poly[i]);
 	}
 
-	function input() {
-		
+	public static function input(input:String) {
+		Main.i.clear();
+		var shapes:Array<PersonaShapeOptions> = Json.parse(input);
+		for (shape in shapes) Main.i.add_shape(shape);
 	}
 
-	function output() {
-		
+	public static function output() {
+		trace(Json.stringify([for (shape in Main.i.shapes) shape.options]));
 	}
 	
 }
