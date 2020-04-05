@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","7");
+		_this.setReserved("build","8");
 	} else {
-		_this.h["build"] = "7";
+		_this.h["build"] = "8";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -6173,8 +6173,10 @@ var Main = function() {
 		_gthis.undo();
 		return;
 	}, simplify : function() {
-		var a = _gthis.shapes;
-		_gthis.reduce_poly(a[a.length - 1].options.poly);
+		_gthis.reduce_last();
+		return;
+	}, simplify_all : function() {
+		_gthis.reduce_all();
 		return;
 	}, clear : $bind(this,this.clear), select_line_color : function(i1) {
 		return Main.palette_index_line = i1;
@@ -6185,9 +6187,7 @@ var Main = function() {
 	this.canvas.addEventListener("mouseDown",$bind(this,this.pointer_down));
 	this.stage.addEventListener("mouseMove",$bind(this,this.pointer_move));
 	this.stage.addEventListener("mouseUp",$bind(this,this.pointer_up));
-	this.stage.addEventListener("keyDown",$bind(this,this.key_down));
 	this.stage.addEventListener("enterFrame",util_UpdateManager.update);
-	haxe_Log.trace("\n\t\t\tCONTROLS:\n\t\t\t~~~~~~~~~\n\t\t\tUP/DOWN - line thickness\n\t\t\tLEFT/RIGHT - select color\n\t\t\tF - fill/line mode\n\t\t\tR - reduce last poly\n\t\t\tShift+R - reduce all poly\n\t\t\tCtrl+Z - undo last poly\n\t\t\tCtrl+Shift+Z - clear screen\n\t\t\tSpace - play animation\n\t\t",{ fileName : "Source/Main.hx", lineNumber : 68, className : "Main", methodName : "new"});
 	zero_utilities_EventBus.listen($bind(this,this.update),"update");
 };
 $hxClasses["Main"] = Main;
@@ -6200,51 +6200,20 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 	,canvas: null
 	,cur_line: null
 	,drawing: null
-	,key_down: function(e) {
-		haxe_Log.trace(e.keyCode,{ fileName : "Source/Main.hx", lineNumber : 84, className : "Main", methodName : "key_down"});
-		if(e.keyCode == 70) {
-			this.change_fill();
+	,reduce_last: function() {
+		var a = this.shapes;
+		if(a[a.length - 1] != null) {
+			var a1 = this.shapes;
+			this.reduce_poly(a1[a1.length - 1].options.poly);
 		}
-		if(e.keyCode == 38) {
-			this.change_line(1);
-		}
-		if(e.keyCode == 40) {
-			this.change_line(-1);
-		}
-		if(e.keyCode == 37) {
-			this.get_color(-1);
-		}
-		if(e.keyCode == 39) {
-			this.get_color(1);
-		}
-		if(e.keyCode == 82) {
-			if(e.shiftKey) {
-				var _g = 0;
-				var _g1 = this.shapes;
-				while(_g < _g1.length) {
-					var shape = _g1[_g];
-					++_g;
-					this.reduce_poly(shape.options.poly);
-				}
-			} else {
-				var a = this.shapes;
-				this.reduce_poly(a[a.length - 1].options.poly);
-			}
-		}
-		if(e.keyCode == 90 && e.shiftKey && e.ctrlKey) {
-			this.clear();
-		}
-		if(e.keyCode == 90 && e.ctrlKey) {
-			this.undo();
-		}
-		if(e.keyCode == 32) {
-			this.play_animation();
-		}
-		if(e.keyCode == 73) {
-			this.input();
-		}
-		if(e.keyCode == 79) {
-			this.output();
+	}
+	,reduce_all: function() {
+		var _g = 0;
+		var _g1 = this.shapes;
+		while(_g < _g1.length) {
+			var shape = _g1[_g];
+			++_g;
+			this.reduce_poly(shape.options.poly);
 		}
 	}
 	,clear: function() {
@@ -6266,7 +6235,7 @@ Main.prototype = $extend(openfl_display_Sprite.prototype,{
 		return Main.fill;
 	}
 	,change_line: function(n) {
-		haxe_Log.trace(n,{ fileName : "Source/Main.hx", lineNumber : 112, className : "Main", methodName : "change_line"});
+		haxe_Log.trace(n,{ fileName : "Source/Main.hx", lineNumber : 93, className : "Main", methodName : "change_line"});
 		Main.line_thickness += n;
 		return Main.line_thickness;
 	}
@@ -7228,6 +7197,10 @@ var Toolbar = function(options) {
 		options.simplify();
 		return;
 	});
+	this.simplify.addEventListener("rightMouseDown",function(e6) {
+		options.simplify_all();
+		return;
+	});
 	this.clear = new openfl_display_Sprite();
 	var sprite19 = this.clear;
 	var color17 = zero_utilities__$Color_Color_$Impl_$.PICO_8_RED;
@@ -7265,7 +7238,7 @@ var Toolbar = function(options) {
 	var sprite22 = this.clear;
 	sprite22.set_x(224);
 	sprite22.set_y(0);
-	this.clear.addEventListener("mouseDown",function(e6) {
+	this.clear.addEventListener("mouseDown",function(e7) {
 		options.clear();
 		return;
 	});
@@ -7286,7 +7259,7 @@ var Toolbar = function(options) {
 	line.get_graphics().lineStyle();
 	this.fill_btn.addChild(fill);
 	this.fill_btn.addChild(line);
-	this.fill_btn.addEventListener("mouseDown",function(e7) {
+	this.fill_btn.addEventListener("mouseDown",function(e8) {
 		var f = options.fill();
 		fill.set_visible(f);
 		line.set_visible(!f);

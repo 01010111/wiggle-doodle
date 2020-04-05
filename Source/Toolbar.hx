@@ -89,6 +89,7 @@ class Toolbar extends Sprite {
 		simplify.rect(Color.WHITE, -6, -6, 12, 12, 0, 2);
 		simplify.set_position(184, 0);
 		simplify.addEventListener(MouseEvent.MOUSE_DOWN, (e) -> options.simplify());
+		simplify.addEventListener(MouseEvent.RIGHT_MOUSE_DOWN, (e) -> options.simplify_all());
 
 		clear = new Sprite();
 		clear.fill_rect(Color.PICO_8_RED, -16, -16, 32, 32, 4);
@@ -148,6 +149,7 @@ typedef ToolbarOptions = {
 	change_line:Int -> Int,
 	erase:Void -> Void,
 	simplify:Void -> Void,
+	simplify_all:Void -> Void,
 	clear:Void -> Void,
 	select_fill_color: Int -> Void,
 	select_line_color: Int -> Void,

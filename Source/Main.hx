@@ -54,7 +54,8 @@ class Main extends Sprite
 			line_color: palette_index_line,
 			change_line: (i) -> change_line(i),
 			erase: () -> undo(),
-			simplify: () -> reduce_poly(shapes.last().options.poly),
+			simplify: () -> reduce_last(),
+			simplify_all: () -> reduce_all(),
 			clear: clear,
 			select_line_color: (i) -> return palette_index_line = i,
 			select_fill_color: (i) -> return palette_index_fill = i,
@@ -63,36 +64,16 @@ class Main extends Sprite
 		canvas.addEventListener(MouseEvent.MOUSE_DOWN, pointer_down);
 		stage.addEventListener(MouseEvent.MOUSE_MOVE, pointer_move);
 		stage.addEventListener(MouseEvent.MOUSE_UP, pointer_up);
-		stage.addEventListener(KeyboardEvent.KEY_DOWN, key_down);
 		stage.addEventListener(Event.ENTER_FRAME, util.UpdateManager.update);
-		trace('
-			CONTROLS:
-			~~~~~~~~~
-			UP/DOWN - line thickness
-			LEFT/RIGHT - select color
-			F - fill/line mode
-			R - reduce last poly
-			Shift+R - reduce all poly
-			Ctrl+Z - undo last poly
-			Ctrl+Shift+Z - clear screen
-			Space - play animation
-		');
 		update.listen('update');
 	}
 
-	function key_down(e:KeyboardEvent) {
-		trace(e.keyCode);
-		if (e.keyCode == 70) change_fill();
-		if (e.keyCode == 38) change_line(1);
-		if (e.keyCode == 40) change_line(-1);
-		if (e.keyCode == 37) get_color(-1);
-		if (e.keyCode == 39) get_color(1);
-		if (e.keyCode == 82) e.shiftKey ? for (shape in shapes) reduce_poly(shape.options.poly) : reduce_poly(shapes.last().options.poly);
-		if (e.keyCode == 90 && e.shiftKey && e.ctrlKey) clear();
-		if (e.keyCode == 90 && e.ctrlKey) undo();
-		if (e.keyCode == 32) play_animation();
-		if (e.keyCode == 73) input();
-		if (e.keyCode == 79) output();
+	function reduce_last() {
+		if (shapes.last() != null) reduce_poly(shapes.last().options.poly);
+	}
+
+	function reduce_all() {
+		for (shape in shapes) reduce_poly(shape.options.poly);
 	}
 
 	function clear() {
