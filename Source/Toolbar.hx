@@ -37,7 +37,7 @@ class Toolbar extends Sprite {
 		line_color = new Sprite();
 		line_color.fill_rect(Color.PICO_8_DARK_BLUE, -16, -16, 32, 32, 4);
 		line_color.set_position(64, 0);
-		fill_color.addEventListener(MouseEvent.MOUSE_DOWN, (e) -> {
+		line_color.addEventListener(MouseEvent.MOUSE_DOWN, (e) -> {
 			Palette.i.invoke((i) -> {
 				options.select_line_color(i);
 				set_line_color(i);

@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","6");
+		_this.setReserved("build","7");
 	} else {
-		_this.h["build"] = "6";
+		_this.h["build"] = "7";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -7023,7 +7023,7 @@ var Toolbar = function(options) {
 	var sprite5 = this.line_color;
 	sprite5.set_x(64);
 	sprite5.set_y(0);
-	this.fill_color.addEventListener("mouseDown",function(e1) {
+	this.line_color.addEventListener("mouseDown",function(e1) {
 		Palette.i.invoke(function(i1) {
 			options.select_line_color(i1);
 			_gthis.set_line_color(i1);
