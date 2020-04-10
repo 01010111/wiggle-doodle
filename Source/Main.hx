@@ -41,15 +41,19 @@ class Main extends Sprite
 	var shapes:Array<WiggleShape> = [];
 	var cur_shape:Array<Vec2>;
 	var canvas:Sprite;
+	var fills:Sprite;
+	var wiggle_layer:Sprite;
 	var cur_line:Sprite;
 	var drawing:Bool = false;
+	var draw_static:Bool = true;
 
 	public function new()
 	{
 		super();
 		i = this;
 		addChild(canvas = new Sprite());
-		canvas.fill_rect(Color.WHITE, 0, 0, 10000, 10000);
+		canvas.fill_rect(Color.WHITE, 0, 0, 1920, 1080);
+		addChild(wiggle_layer = new Sprite());
 		addChild(cur_line = new Sprite());
 		addChild(new Toolbar({
 			fill: () -> change_fill(),
@@ -65,6 +69,7 @@ class Main extends Sprite
 		}));
 		addChild(new Palette());
 		canvas.addEventListener(MouseEvent.MOUSE_DOWN, pointer_down);
+		wiggle_layer.addEventListener(MouseEvent.MOUSE_DOWN, pointer_down);
 		stage.addEventListener(MouseEvent.MOUSE_MOVE, pointer_move);
 		stage.addEventListener(MouseEvent.MOUSE_UP, pointer_up);
 		stage.addEventListener(Event.ENTER_FRAME, util.UpdateManager.update);
@@ -82,6 +87,8 @@ class Main extends Sprite
 	function clear() {
 		output();
 		while (shapes.length > 0) shapes.pop().remove();
+		canvas.graphics.clear();
+		canvas.fill_rect(Color.WHITE, 0, 0, 1920, 1080);
 	}
 
 	function undo() {
@@ -121,7 +128,7 @@ class Main extends Sprite
 		if (!drawing) return;
 		cur_shape.push([e.localX, e.localY]);
 		remove_near_vectors(cur_shape);
-		add_shape({
+		if (!fill || !draw_static) add_shape({
 			poly: cur_shape,
 			line_thickness: line_thickness,
 			line_color: fill ? null : palette[palette_index_line],
@@ -130,6 +137,7 @@ class Main extends Sprite
 			jiggle: 0,
 			speed: 400
 		});
+		else canvas.fill_poly(palette[palette_index_fill], cur_shape);
 		cur_line.graphics.clear();
 		drawing = false;
 	}
@@ -137,7 +145,7 @@ class Main extends Sprite
 	function add_shape(options:PersonaShapeOptions) {
 		var shape = new WiggleShape(options);
 		shapes.push(shape);
-		canvas.addChild(shape);
+		wiggle_layer.addChild(shape);
 	}
 
 	function remove_near_vectors(a:Array<Vec2>) {
